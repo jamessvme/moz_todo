@@ -1,7 +1,8 @@
 <script>
   import FilterButton from "./FilterButton.svelte";
   import Todo from "./Todo.svelte";
-
+  import MoreAction from "./MoreAction.svelte";
+  import NewTodo from "./NewTodo.svelte";
   export let todos = [];
   let newTodoId;
   $: {
@@ -12,51 +13,37 @@
     }
   $: totalTodos = todos.length;
   $: completedTodos = todos.filter( todo => todo.completed).length;
-  let newTodoName = '';
 
   function removeTodo(todo) {
     todos = todos.filter(t => t.id !== todo.id);
   }
 
-  function addTodo() {
-    todos = [...todos, {id: newTodoId, name: newTodoName, completed: false}]
-    newTodoName = '';
+  function addTodo(name) {
+    todos = [...todos, {id: newTodoId, name, completed: false}]
   }
-  let filter = 'all';
+  
+  const checkAllTodos = (completed) => todos = todos.map((t) => ({ ...t, completed }));
 
+  const removeCompletedTodos = () => todos = todos.filter( t => !t.completed);
+  let filter = 'all';
+  let autofocus = true;
   const filterTodos = (filter, todos) => 
     filter === 'active' ? todos.filter(t => !t.completed):
     filter === 'completed' ? todos.filter(t => t.completed):
     todos
 </script>
 <div class="todoapp stack-large">
-  <form on:submit|preventDefault = {addTodo}>
-    <h2 class="label-wrapper">
-      <label 
-        for="todo-0"
-        class="label__lg">
-          What needs to be done?
-      </label> 
-    </h2>
-    {newTodoName}
-    <input 
-      type="text" 
-      id="todo-0"
-      bind:value={newTodoName}
-      autocomplete="off" 
-      class="input input__lg" />
-    <button 
-      type="submit" 
-      disabled="" 
-      class="btn btn_primary btn__lg"
-      >
-        Add
-      </button>
-  </form>
+  <NewTodo 
+    on:addTodo = {e => addTodo(e => e.detail)} 
+    autofocus
+    />
   <FilterButton 
     bind:filter ={filter} 
     />
-  
+  <MoreAction 
+    on:checkAll = {(e) => checkAllTodos(e.detail)}
+    on:removeCompleted = {removeCompletedTodos}
+    />
   <h2 id="list-heading">{completedTodos} out of {totalTodos} items completed</h2>
   <!-- Todos -->
   <ul  class="todo-list stack-large" aria-labelledby="list-heading">

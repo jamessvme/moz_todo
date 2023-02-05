@@ -1,10 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  const dispatch = createEventDispatcher();
+  import { tick } from "svelte";
+  
   export let todo;
+  
+  const dispatch = createEventDispatcher();
   let editing = false;
   let name = todo.name;
-  
+  let nameEl;
   function updateTodo(todo) {
     const i = todos.findIndex((t) => t.id === todo.id)
     todos[i] = { ...todos[i], ...todo }
@@ -26,8 +29,10 @@
     dispatch('remove', todo);
   }
 
-  function onEdit() {
+  async function onEdit() {
     editing = true;
+    await tick();
+    nameEl.focus();
   }
 
   function onToggle() {
@@ -40,7 +45,7 @@
     <form on:submit|preventDefault={onSave} class="stack-small" on:keydown={(e) => e.key === 'Escape' && onCancel()}>
       <div class="form-group">
         <label for="todo-{todo.id}" class="todo-label">New name for '{todo.name}'</label>
-        <input bind:value={name} type="text" id="todo-{todo.id}" autoComplete="off" class="todo-text" />
+        <input bind:this = {nameEl} bind:value={name} type="text" id="todo-{todo.id}" autoComplete="off" class="todo-text" />
       </div>
       <div class="btn-group">
         <button class="btn todo-cancel" on:click={onCancel} type="button">
